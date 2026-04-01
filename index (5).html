@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Life Blueprint Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0a0f;--surface:#13131a;--card:#1a1a24;--border:#2a2a3a;--accent:#7c6dfa;--accent2:#fa6d8a;--accent3:#6dfabd;--text:#f0f0ff;--muted:#7070a0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+.noise{position:fixed;inset:0;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");z-index:999;}
+.glow{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(124,109,250,0.12) 0%,transparent 70%);top:-200px;left:-200px;pointer-events:none;animation:drift 8s ease-in-out infinite alternate;}
+@keyframes drift{to{transform:translate(100px,100px);}}
+
+/* HEADER */
+header{padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:-0.02em;}
+.logo span{color:var(--accent);}
+.tagline{font-size:.8rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+/* HERO */
+.hero{padding:5rem 3rem 3rem;max-width:900px;margin:0 auto;text-align:center;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.5rem;}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted);font-size:1.1rem;line-height:1.7;max-width:600px;margin:0 auto 3rem;}
+.start-btn{background:var(--accent);color:#fff;border:none;padding:1rem 2.5rem;border-radius:50px;font-size:1rem;font-weight:500;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;letter-spacing:.02em;}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(124,109,250,.4);}
+
+/* FORM */
+.form-section{display:none;max-width:800px;margin:0 auto;padding:2rem 3rem 4rem;}
+.form-section.active{display:block;}
+.section-label{font-family:'Syne',sans-serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;}
+.section-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;margin-bottom:2rem;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;}
+@media(max-width:600px){.grid{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:.5rem;}
+.field label{font-size:.85rem;color:var(--muted);font-weight:500;}
+.field input,.field select{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;color:var(--text);font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:.2s;}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,109,250,.1);}
+.field select option{background:var(--card);}
+.slider-wrap{display:flex;align-items:center;gap:1rem;}
+.slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:4px;background:var(--border);outline:none;}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;}
+.slider-val{font-size:.9rem;font-weight:600;color:var(--accent);min-width:30px;text-align:right;}
+.divider{height:1px;background:var(--border);margin:2rem 0;}
+.cat-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;}
+.cat-icon{font-size:1.2rem;}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;padding:1.1rem;border-radius:14px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.03em;margin-top:1rem;transition:.2s;}
+.submit-btn:hover{opacity:.9;transform:translateY(-1px);}
+
+/* RESULTS */
+.results{display:none;max-width:900px;margin:0 auto;padding:2rem 3rem 4rem;}
+.results.active{display:block;}
+.score-hero{text-align:center;padding:3rem 0;}
+.score-ring{width:180px;height:180px;margin:0 auto 1.5rem;position:relative;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring .track{fill:none;stroke:var(--border);stroke-width:10;}
+.score-ring .fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease;}
+.score-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.score-num .num{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;line-height:1;}
+.score-num .label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+.score-grade{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;margin-bottom:.5rem;}
+.score-msg{color:var(--muted);font-size:.95rem;max-width:400px;margin:0 auto;}
+.cats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:2rem 0;}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;}
+.cat-card .cat-name{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.cat-card .cat-score{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;margin-bottom:.5rem;}
+.cat-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.cat-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.actions-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin:2.5rem 0 1rem;}
+.action-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;gap:1rem;align-items:flex-start;}
+.action-icon{font-size:1.3rem;margin-top:.1rem;}
+.action-text .action-t{font-weight:500;font-size:.95rem;margin-bottom:.2rem;}
+.action-text .action-d{font-size:.82rem;color:var(--muted);line-height:1.5;}
+.restart-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.9rem 2rem;border-radius:50px;font-size:.9rem;cursor:pointer;margin-top:1.5rem;font-family:'DM Sans',sans-serif;transition:.2s;}
+.restart-btn:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="glow"></div>
+
+<header>
+  <div class="logo">Life<span>Blueprint</span></div>
+  <div class="tagline">AI Life Score Generator</div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <h1>Know Your <em>Life Score</em><br/>Take Action Today</h1>
+  <p>Answer a few questions about your health, finances, habits, and goals. Get an AI-powered score with a personalized blueprint for improvement.</p>
+  <button class="start-btn" onclick="showForm()">Generate My Blueprint →</button>
+</section>
+
+<!-- FORM -->
+<section class="form-section" id="formSection">
+  <div class="section-label">Step 1 of 1</div>
+  <div class="section-title">Tell us about your lifestyle</div>
+
+  <!-- Health -->
+  <div class="cat-title"><span class="cat-icon">🏥</span> Health & Fitness</div>
+  <div class="grid">
+    <div class="field">
+      <label>Sleep hours per night</label>
+      <div class="slider-wrap">
+        <input type="range" min="3" max="10" value="7" id="sleep" oninput="sv('sleepV',this.value)"/>
+        <span class="slider-val" id="sleepV">7</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Exercise days per week</label>
+      <div class="slider-wrap">
+        <input type="range" min="0" max="7" value="3" id="exercise" oninput="sv('exerciseV',this.value)"/>
+        <span class="slider-val" id="exerciseV">3</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Diet quality</label>
+      <select id="diet">
+        <option value="1">Poor — lots of junk food</option>
+        <option value="2">Fair — some healthy choices</option>
+        <option value="3" selected>Good — mostly balanced</option>
+        <option value="4">Excellent — very clean eating</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Water intake (glasses/day)</label>
+      <div class="slider-wrap">
+        <input type="range" min="1" max="12" value="6" id="water" oninput="sv('waterV',this.value)"/>
+        <span class="slider-val" id="waterV">6</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Finance -->
+  <div class="cat-title"><span class="cat-icon">💰</span> Financial Health</div>
+  <div class="grid">
+    <div class="field">
+      <label>Monthly savings rate</label>
+      <select id="savings">
+        <option value="1">None — spending more than I earn</option>
+        <option value="2">Less than 10%</option>
+        <option value="3" selected>10–25%</option>
+        <option value="4">25–40%</option>
+        <option value="5">40%+</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Emergency fund</label>
+      <select id="emergency">
+        <option value="1">None</option>
+        <option value="2">Less than 1 month</option>
+        <option value="3" selected>1–3 months</option>
+        <option value="4">3–6 months</option>
+        <option value="5">6+ months</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Debt situation</label>
+      <select id="debt">
+        <option value="1">Heavy debt, struggling</option>
+        <option value="2">Some debt, managing</option>
+        <option value="3" selected>Minimal debt</option>
+        <option value="4">Debt-free</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Investment activity</label>
+      <select id="invest">
+        <option value="1">None</option>
+        <option value="2" selected>Occasional</option>
+        <option value="3">Regular (monthly)</option>
+        <option value="4">Active, diversified</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Habits -->
+  <div class="cat-title"><span class="cat-icon">🧠</span> Mental & Habits</div>
+  <div class="grid">
+    <div class="field">
+      <label>Stress level (1 = low, 10 = high)</label>
+      <div class="slider-wrap">
+        <input type="range" min="1" max="10" value="5" id="stress" oninput="sv('stressV',this.value)"/>
+        <span class="slider-val" id="stressV">5</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Screen time (hours/day)</label>
+      <div class="slider-wrap">
+        <input type="range" min="1" max="14" value="5" id="screen" oninput="sv('screenV',this.value)"/>
+        <span class="slider-val" id="screenV">5</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Learning / self-development</label>
+      <select id="learning">
+        <option value="1">Rarely</option>
+        <option value="2">Monthly</option>
+        <option value="3" selected>Weekly</option>
+        <option value="4">Daily</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Social connections</label>
+      <select id="social">
+        <option value="1">Isolated</option>
+        <option value="2">Limited</option>
+        <option value="3" selected>Good network</option>
+        <option value="4">Strong & active</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Goals -->
+  <div class="cat-title"><span class="cat-icon">🎯</span> Goals & Purpose</div>
+  <div class="grid">
+    <div class="field">
+      <label>Career satisfaction</label>
+      <select id="career">
+        <option value="1">Very unhappy</option>
+        <option value="2">Unsatisfied</option>
+        <option value="3" selected>Neutral</option>
+        <option value="4">Satisfied</option>
+        <option value="5">Thriving</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Clear life goals?</label>
+      <select id="goals">
+        <option value="1">No direction</option>
+        <option value="2">Vague ideas</option>
+        <option value="3" selected>Some goals set</option>
+        <option value="4">Clear goals, taking action</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="calcScore()">Generate My Life Blueprint →</button>
+</section>
+
+<!-- RESULTS -->
+<section class="results" id="resultsSection">
+  <div class="score-hero">
+    <div class="score-ring">
+      <svg width="180" height="180" viewBox="0 0 180 180">
+        <circle class="track" cx="90" cy="90" r="80"/>
+        <circle class="fill" id="scoreFill" cx="90" cy="90" r="80" stroke-dasharray="502" stroke-dashoffset="502"/>
+      </svg>
+      <div class="score-num">
+        <div class="num" id="scoreNum">0</div>
+        <div class="label">/ 100</div>
+      </div>
+    </div>
+    <div class="score-grade" id="scoreGrade"></div>
+    <div class="score-msg" id="scoreMsg"></div>
+  </div>
+
+  <div class="cats-grid" id="catsGrid"></div>
+
+  <div class="actions-title">Your Personalized Action Plan</div>
+  <div id="actionsList"></div>
+
+  <center><button class="restart-btn" onclick="restart()">← Retake Assessment</button></center>
+</section>
+
+<script>
+function sv(id,v){document.getElementById(id).textContent=v;}
+function showForm(){document.getElementById('heroSection').style.display='none';document.getElementById('formSection').classList.add('active');}
+function restart(){document.getElementById('resultsSection').classList.remove('active');document.getElementById('heroSection').style.display='block';}
+
+function calcScore(){
+  const sleep=+document.getElementById('sleep').value;
+  const exercise=+document.getElementById('exercise').value;
+  const diet=+document.getElementById('diet').value;
+  const water=+document.getElementById('water').value;
+  const savings=+document.getElementById('savings').value;
+  const emergency=+document.getElementById('emergency').value;
+  const debt=+document.getElementById('debt').value;
+  const invest=+document.getElementById('invest').value;
+  const stress=+document.getElementById('stress').value;
+  const screen=+document.getElementById('screen').value;
+  const learning=+document.getElementById('learning').value;
+  const social=+document.getElementById('social').value;
+  const career=+document.getElementById('career').value;
+  const goals=+document.getElementById('goals').value;
+
+  const healthScore=Math.round(((sleep/10)*25+(exercise/7)*25+(diet/4)*25+(water/12)*25));
+  const financeScore=Math.round(((savings/5)*25+(emergency/5)*25+(debt/4)*25+(invest/4)*25));
+  const mentalScore=Math.round((((10-stress)/9)*33+((14-screen)/13)*33+(learning/4)*34));
+  const goalsScore=Math.round(((career/5)*50+(goals/4)*50));
+
+  const total=Math.round((healthScore+financeScore+mentalScore+goalsScore)/4);
+
+  document.getElementById('formSection').classList.remove('active');
+  document.getElementById('resultsSection').classList.add('active');
+
+  // Animate score number
+  let n=0;
+  const t=setInterval(()=>{n+=2;document.getElementById('scoreNum').textContent=Math.min(n,total);if(n>=total)clearInterval(t);},20);
+
+  // Ring
+  const fill=document.getElementById('scoreFill');
+  const colors=total>=80?'#6dfabd':total>=60?'#7c6dfa':total>=40?'#fad96d':'#fa6d8a';
+  fill.style.stroke=colors;
+  setTimeout(()=>{fill.style.strokeDashoffset=502-(502*(total/100));},100);
+
+  // Grade
+  const grades=[
+    [80,'Thriving','You\'re living well across most areas. Keep building on your strengths.'],
+    [60,'On Track','Good foundations in place. A few focused improvements will elevate your life significantly.'],
+    [40,'Building','You\'re making progress. Consistency in key areas will create real momentum.'],
+    [0,'Starting Out','Every expert was once a beginner. Small daily actions compound into major life change.']
+  ];
+  const [,grade,msg]=grades.find(([min])=>total>=min)||grades[3];
+  document.getElementById('scoreGrade').textContent=grade;
+  document.getElementById('scoreMsg').textContent=msg;
+
+  // Category cards
+  const cats=[
+    {name:'Health',score:healthScore,color:'#6dfabd'},
+    {name:'Finance',score:financeScore,color:'#7c6dfa'},
+    {name:'Mental',score:mentalScore,color:'#fad96d'},
+    {name:'Goals',score:goalsScore,color:'#fa6d8a'},
+  ];
+  document.getElementById('catsGrid').innerHTML=cats.map(c=>`
+    <div class="cat-card">
+      <div class="cat-name">${c.name}</div>
+      <div class="cat-score" style="color:${c.color}">${c.score}</div>
+      <div class="cat-bar"><div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div></div>
+    </div>`).join('');
+
+  // Actions
+  const actions=[];
+  if(sleep<7)actions.push({i:'😴',t:'Improve Sleep Quality',d:'Aim for 7–9 hours. Set a consistent bedtime and avoid screens 1 hour before sleep.'});
+  if(exercise<3)actions.push({i:'🏃',t:'Exercise More Regularly',d:'Start with 3 days/week. Even 30-min walks count. Consistency beats intensity.'});
+  if(diet<3)actions.push({i:'🥗',t:'Clean Up Your Diet',d:'Add one vegetable to each meal. Cut sugary drinks. Meal prep on Sundays.'});
+  if(savings<3)actions.push({i:'💰',t:'Build a Savings Habit',d:'Set up auto-transfer of 10% of income to savings the day you get paid.'});
+  if(emergency<3)actions.push({i:'🛡️',t:'Build Your Emergency Fund',d:'Target 3 months of expenses. Start with ₹500/month and increase gradually.'});
+  if(stress>6)actions.push({i:'🧘',t:'Manage Stress Actively',d:'Try 10 min daily meditation (Headspace or YouTube). Take proper breaks.'});
+  if(learning<3)actions.push({i:'📚',t:'Invest in Learning',d:'Read 20 pages/day or take one online course per month. Compound your knowledge.'});
+  if(goals<3)actions.push({i:'🎯',t:'Set Clear Life Goals',d:'Write 3 goals for the next 90 days. Review every Sunday. Track progress weekly.'});
+  if(career<3)actions.push({i:'💼',t:'Improve Career Satisfaction',d:'Identify what\'s missing. Talk to a mentor. Update your skills or explore new roles.'});
+  if(actions.length===0)actions.push({i:'🌟',t:'Maintain & Grow',d:'You\'re doing great! Focus on consistency. Mentor others and share your habits.'});
+
+  document.getElementById('actionsList').innerHTML=actions.map(a=>`
+    <div class="action-item">
+      <div class="action-icon">${a.i}</div>
+      <div class="action-text"><div class="action-t">${a.t}</div><div class="action-d">${a.d}</div></div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
