@@ -1,2 +1,4 @@
 # Predictive-life-blueprint-generator
 Gives us a good score to tell what actions to take to improve ourselves in life such as health, financial goals etc 
+
+"I designed a Reinforcement Learning system using PPO and SAC to optimize multi-domain life planning decisions across career, finance, and health. I engineered a custom simulation environment called LifePlanEnv with a shaped reward function — R = 0.35·career + 0.35·finance + 0.30·health minus penalties. The PPO agent uses a clipped surrogate objective with GAE advantage estimation and an Actor-Critic neural network. The SAC agent uses twin Q-networks, an experience replay buffer of 1 million transitions, and automatic entropy tuning. Both agents significantly outperform the baseline heuristic — SAC achieves around 60% higher reward but PPO converges faster and uses less memory. The system outputs an optimal policy — concrete actions the agent recommends for each life domain."
